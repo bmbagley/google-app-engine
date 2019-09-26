@@ -7,8 +7,8 @@ from io import BytesIO
 
 from fastai.vision import *
 
-model_file_url = 'https://www.dropbox.com/s/y4kl2gv1akv7y4i/stage-2.pth?raw=1'
-model_file_name = 'model'
+export_file_url = 'https://storage.cloud.google.com/dev-int045_ml/models/export.pkl'
+export_file_name = 'export.pkl'
 classes = ['black', 'grizzly', 'teddys']
 path = Path(__file__).parent
 
@@ -24,9 +24,9 @@ async def download_file(url, dest):
             with open(dest, 'wb') as f: f.write(data)
 
 async def setup_learner():
-    await download_file(model_file_url, path/'models'/f'{model_file_name}.pth')
+    await download_file(export_file_url, path/export_file_name)
     try:
-        learn = load_learner(path, model_file_name)
+        learn = load_learner(path, export_file_name)
         return learn
     except RuntimeError as e:
         if len(e.args) > 0 and 'CPU-only machine' in e.args[0]:
@@ -51,7 +51,8 @@ async def analyze(request):
     data = await request.form()
     img_bytes = await (data['file'].read())
     img = open_image(BytesIO(img_bytes))
-    return JSONResponse({'result': learn.predict(img)[0]})
+    prediction = learn.predict(img)[0]
+    return JSONResponse({'result': str(prediction)})
 
 if __name__ == '__main__':
     if 'serve' in sys.argv: uvicorn.run(app, host='0.0.0.0', port=8080)
