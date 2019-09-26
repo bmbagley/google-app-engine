@@ -1,5 +1,5 @@
 numpy==1.16.0rc1
-fastai
+fastai==1.0.55
 starlette
 uvicorn
 python-multipart
